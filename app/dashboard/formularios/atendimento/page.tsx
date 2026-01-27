@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, Suspense } from "react";
 import { supabase } from "../../../../lib/supabase"; 
-import { Save, Loader2, CheckCircle, FileText, AlertTriangle, Building2, MapPin, Search, ChevronDown, Edit } from "lucide-react";
+import { Save, Loader2, CheckCircle, FileText, AlertTriangle, Building2, MapPin, Search, ChevronDown, Edit, Bus } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 // --- CONSTANTES ---
@@ -25,7 +25,7 @@ const MUNICIPIOS_RJ = [
   "Tanguá", "Teresópolis", "Trajano de Moraes", "Três Rios", "Valença", "Varre-Sai",
   "Vassouras", "Volta Redonda"
 ];
-const UNIDADES_DISPONIVEIS = [ "CIAM Márcia Lyra", "CEAM Baixada", "CEAM Queimados" ];
+const CENTROS_DISPONIVEIS = [ "CIAM Márcia Lyra", "CEAM Baixada", "CEAM Queimados" ];
 
 // --- CONTEÚDO DO FORMULÁRIO ---
 function ServicesFormContent() {
@@ -38,7 +38,9 @@ function ServicesFormContent() {
   const [success, setSuccess] = useState(false);
   const [hasAccess, setHasAccess] = useState<boolean | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [activeTab, setActiveTab] = useState<'ônibus lilás' | 'unidade'>('ônibus lilás');
+  
+  // Mantive os valores internos 'regional' e 'unidade' para bater com o banco, mas mudei o visual
+  const [activeTab, setActiveTab] = useState<'regional' | 'unidade'>('regional');
   const [targetCoordId, setTargetCoordId] = useState<number | null>(null);
 
   const [formRegional, setFormRegional] = useState({ date_service: "", origin: "", municipality: "", internal_count: "", partner_count: "" });
@@ -49,7 +51,7 @@ function ServicesFormContent() {
 
   // 1. Configurar Aba
   useEffect(() => {
-    if (editId && typeParam && (typeParam === 'ônibus lilás' || typeParam === 'unidade')) {
+    if (editId && typeParam && (typeParam === 'regional' || typeParam === 'unidade')) {
         setActiveTab(typeParam);
     }
   }, [editId, typeParam]);
@@ -112,7 +114,7 @@ function ServicesFormContent() {
     const userId = (await supabase.auth.getUser()).data.user?.id;
     let error = null;
 
-    if (activeTab === 'ônibus lilás') {
+    if (activeTab === 'regional') {
         const payload = {
             date_service: formRegional.date_service,
             origin: formRegional.origin,
@@ -158,11 +160,9 @@ function ServicesFormContent() {
     }
   };
 
-  // --- LOADER E ERRO (AGORA COM FUNDO DE VIDRO) ---
   if (hasAccess === null) return (
     <div className="flex flex-col items-center justify-center h-[60vh] gap-4">
         <div className="relative">
-            {/* Círculo animado roxo */}
             <div className="h-16 w-16 rounded-full border-4 border-white/20"></div>
             <div className="absolute top-0 left-0 h-16 w-16 rounded-full border-4 border-accent border-t-transparent animate-spin"></div>
         </div>
@@ -175,39 +175,38 @@ function ServicesFormContent() {
         <div className="bg-white/90 backdrop-blur-xl p-8 rounded-3xl shadow-2xl text-center max-w-md border border-white/50 animate-in zoom-in">
             <AlertTriangle size={48} className="mx-auto text-yellow-500 mb-4" />
             <h1 className="text-xl font-bold text-gray-800">Acesso Restrito</h1>
-            <p className="text-gray-600 mt-2 text-sm">Este formulário é exclusivo para a Coordenação de Fortalecimento de Serviços.</p>
+            <p className="text-gray-600 mt-2 text-sm">Exclusivo para Coordenação de Fortalecimento.</p>
             <button onClick={() => router.push("/dashboard")} className="mt-6 px-6 py-2 bg-primary text-white rounded-xl font-bold hover:bg-primary-dark transition-all shadow-lg hover:shadow-primary/30">Voltar ao Painel</button>
         </div>
     </div>
   );
 
-  // --- FORMULÁRIO PRINCIPAL ---
   return (
     <div className="w-full max-w-3xl bg-white/70 backdrop-blur-md border border-white/60 shadow-2xl rounded-3xl p-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
         
         <div className="mb-8 border-b border-primary/10 pb-4 flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold text-primary-dark">{editId ? "Editar Atendimento" : "Dados de Atendimento"}</h1>
-            <p className="text-gray-600 text-sm">{editId ? "Atualizando registro." : isAdmin ? "Modo Admin: Acesso Liberado" : "Coordenação de Fortalecimento"}</p>
+            <p className="text-gray-600 text-sm">{editId ? "Atualizando registro." : isAdmin ? "Modo Admin: Acesso Liberado" : "Fortalecimento de Serviços"}</p>
           </div>
           <div className="h-12 w-12 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-600 shadow-sm">{editId ? <Edit size={24} /> : <FileText size={24} />}</div>
         </div>
 
-        {/* Abas */}
+        {/* --- ABAS RENOMEADAS --- */}
         <div className="flex p-1 bg-purple-50 rounded-xl mb-8 border border-purple-100">
             <button 
-                onClick={() => !editId && setActiveTab('ônibus lilás')} 
+                onClick={() => !editId && setActiveTab('regional')} 
                 disabled={!!editId} 
-                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-bold transition-all duration-300 ${activeTab === 'ônibus lilás' ? 'bg-white shadow-md text-primary' : 'text-gray-500 hover:text-gray-700 hover:bg-white/50'} ${editId && activeTab !== 'ônibus lilás' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-bold transition-all duration-300 ${activeTab === 'regional' ? 'bg-white shadow-md text-primary' : 'text-gray-500 hover:text-gray-700 hover:bg-white/50'} ${editId && activeTab !== 'regional' ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-                <MapPin size={18} /> Regional
+                <Bus size={18} /> Ônibus Lilás
             </button>
             <button 
                 onClick={() => !editId && setActiveTab('unidade')} 
                 disabled={!!editId} 
                 className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-bold transition-all duration-300 ${activeTab === 'unidade' ? 'bg-white shadow-md text-primary' : 'text-gray-500 hover:text-gray-700 hover:bg-white/50'} ${editId && activeTab !== 'unidade' ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-                <Building2 size={18} /> Unidade
+                <Building2 size={18} /> Centros
             </button>
         </div>
 
@@ -219,8 +218,8 @@ function ServicesFormContent() {
         ) : (
           <form onSubmit={handleSubmit} className="space-y-6">
             
-            {/* --- REGIONAL --- */}
-            {activeTab === 'ônibus lilás' && (
+            {/* --- ÔNIBUS LILÁS (ANTIGO REGIONAL) --- */}
+            {activeTab === 'regional' && (
                 <div className="space-y-6 animate-in slide-in-from-left-4 duration-300">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
@@ -228,7 +227,7 @@ function ServicesFormContent() {
                             <input type="date" required value={formRegional.date_service} onChange={e => setFormRegional({...formRegional, date_service: e.target.value})} className="w-full p-3 rounded-xl bg-white/60 border border-purple-100 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all shadow-sm" />
                         </div>
                         <div className="space-y-2 relative">
-                            <label className="text-sm font-bold text-gray-700 ml-1">Município</label>
+                            <label className="text-sm font-bold text-gray-700 ml-1">Município Visitado</label>
                             <div onClick={() => setIsMuniDropdownOpen(!isMuniDropdownOpen)} className="w-full p-3 rounded-xl bg-white/60 border border-purple-100 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all shadow-sm cursor-pointer flex justify-between items-center">
                                 <span className={formRegional.municipality ? "text-gray-800" : "text-gray-400"}>{formRegional.municipality || "Selecione..."}</span>
                                 <ChevronDown size={18} className="text-gray-400" />
@@ -251,7 +250,7 @@ function ServicesFormContent() {
                         </div>
                     </div>
                     <div className="space-y-2">
-                        <label className="text-sm font-bold text-gray-700 ml-1">Origem</label>
+                        <label className="text-sm font-bold text-gray-700 ml-1">Origem da Demanda</label>
                         <input type="text" required value={formRegional.origin} onChange={e => setFormRegional({...formRegional, origin: e.target.value})} className="w-full p-3 rounded-xl bg-white/60 border border-purple-100 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all shadow-sm"/>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -267,7 +266,7 @@ function ServicesFormContent() {
                 </div>
             )}
 
-            {/* --- UNIDADE --- */}
+            {/* --- CENTROS (ANTIGA UNIDADE) --- */}
             {activeTab === 'unidade' && (
                 <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -276,11 +275,11 @@ function ServicesFormContent() {
                             <input type="date" required value={formUnidade.date_reference} onChange={e => setFormUnidade({...formUnidade, date_reference: e.target.value})} className="w-full p-3 rounded-xl bg-white/60 border border-purple-100 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all shadow-sm"/>
                         </div>
                         <div className="space-y-2 relative">
-                            <label className="text-sm font-bold text-gray-700 ml-1">Unidade</label>
+                            <label className="text-sm font-bold text-gray-700 ml-1">Selecione o Centro</label>
                             <div className="relative">
                                 <select required value={formUnidade.unit_name} onChange={e => setFormUnidade({...formUnidade, unit_name: e.target.value})} className="w-full p-3 pr-10 rounded-xl bg-white/60 border border-purple-100 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none appearance-none text-gray-700 shadow-sm transition-all">
                                     <option value="">Selecione...</option>
-                                    {UNIDADES_DISPONIVEIS.map((u) => <option key={u} value={u}>{u}</option>)}
+                                    {CENTROS_DISPONIVEIS.map((u) => <option key={u} value={u}>{u}</option>)}
                                 </select>
                                 <ChevronDown size={18} className="absolute right-3 top-3 text-gray-500 pointer-events-none" />
                             </div>
@@ -302,15 +301,11 @@ function ServicesFormContent() {
   );
 }
 
-// --- WRAPPER PRINCIPAL ---
+// --- WRAPPER ---
 export default function ServicesForm() {
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-main-gradient p-4 relative">
-      
-      {/* Background Decorativo e Fixo */}
       <div className="fixed top-0 left-0 w-full h-full -z-10 bg-[radial-gradient(circle_at_50%_10%,rgba(106,27,154,0.1)_0%,transparent_50%)]"></div>
-      
-      {/* Suspense com o novo Loader Transparente */}
       <Suspense fallback={
          <div className="flex flex-col items-center justify-center h-[60vh] gap-4">
              <div className="h-12 w-12 rounded-full border-4 border-white/20 border-t-white animate-spin"></div>

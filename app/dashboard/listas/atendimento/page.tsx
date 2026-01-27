@@ -2,20 +2,21 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "../../../../lib/supabase";
-import { Trash2, Edit, Search, Loader2, MapPin, Building2 } from "lucide-react";
+import { Trash2, Edit, Search, Loader2, MapPin, Building2, Bus } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export default function ServicesList() {
-  const [activeTab, setActiveTab] = useState<'ônibus lilás' | 'unidade'>('ônibus lilás');
+  const router = useRouter();
+  // Mantive a lógica 'regional' para não quebrar a busca no banco, mas a UI muda
+  const [activeTab, setActiveTab] = useState<'regional' | 'unidade'>('regional');
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const router = useRouter();
 
   useEffect(() => {
     fetchData();
-  }, [activeTab]); // Recarrega quando muda a aba
+  }, [activeTab]); 
 
   async function fetchData() {
     setLoading(true);
@@ -32,9 +33,8 @@ export default function ServicesList() {
     const admin = profile.role === 'admin';
     setIsAdmin(admin);
 
-    // Seleciona a tabela baseada na aba
-    const tableName = activeTab === 'ônibus lilás' ? 'services_regional' : 'services_units';
-    const orderBy = activeTab === 'ônibus lilás' ? 'date_service' : 'date_reference';
+    const tableName = activeTab === 'regional' ? 'services_regional' : 'services_units';
+    const orderBy = activeTab === 'regional' ? 'date_service' : 'date_reference';
 
     let query = supabase
         .from(tableName)
@@ -52,17 +52,16 @@ export default function ServicesList() {
 
   const handleDelete = async (id: number) => {
       if(!confirm("Deseja excluir este registro?")) return;
-      const tableName = activeTab === 'ônibus lilás' ? 'services_regional' : 'services_units';
+      const tableName = activeTab === 'regional' ? 'services_regional' : 'services_units';
       
       const { error } = await supabase.from(tableName).delete().eq("id", id);
       if (!error) setData(prev => prev.filter(item => item.id !== id));
       else alert("Erro ao excluir: " + error.message);
   };
 
-  // Filtro genérico dependendo da aba
   const filteredData = data.filter(item => {
       const term = searchTerm.toLowerCase();
-      if (activeTab === 'ônibus lilás') {
+      if (activeTab === 'regional') {
           return item.municipality?.toLowerCase().includes(term) || item.origin?.toLowerCase().includes(term);
       } else {
           return item.unit_name?.toLowerCase().includes(term);
@@ -77,19 +76,19 @@ export default function ServicesList() {
             <p className="text-sm text-gray-500">Fortalecimento de Serviços.</p>
         </div>
         
-        {/* Abas de Navegação */}
+        {/* Abas Renomeadas */}
         <div className="flex bg-gray-100 p-1 rounded-xl">
             <button 
-                onClick={() => setActiveTab('ônibus lilás')}
-                className={`px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-all ${activeTab === 'ônibus lilás' ? 'bg-white shadow text-primary' : 'text-gray-500 hover:text-gray-700'}`}
+                onClick={() => setActiveTab('regional')}
+                className={`px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-all ${activeTab === 'regional' ? 'bg-white shadow text-primary' : 'text-gray-500 hover:text-gray-700'}`}
             >
-                <MapPin size={16} /> Ônibus Lilás
+                <Bus size={16} /> Ônibus Lilás
             </button>
             <button 
                 onClick={() => setActiveTab('unidade')}
                 className={`px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-all ${activeTab === 'unidade' ? 'bg-white shadow text-primary' : 'text-gray-500 hover:text-gray-700'}`}
             >
-                <Building2 size={16} /> Unidade
+                <Building2 size={16} /> Centros
             </button>
         </div>
       </div>
@@ -99,7 +98,7 @@ export default function ServicesList() {
             <Search className="absolute left-3 top-3 text-gray-400" size={18} />
             <input 
                 type="text" 
-                placeholder={activeTab === 'ônibus lilás' ? "Buscar município, origem..." : "Buscar unidade..."}
+                placeholder={activeTab === 'regional' ? "Buscar município, origem..." : "Buscar centro..."}
                 className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 outline-none focus:border-primary" 
                 value={searchTerm} 
                 onChange={e => setSearchTerm(e.target.value)} 
@@ -112,8 +111,7 @@ export default function ServicesList() {
             <table className="w-full text-sm text-left text-gray-600">
                 <thead className="text-xs text-gray-700 uppercase bg-gray-50/50 border-b border-gray-100">
                     <tr>
-                        {/* Cabeçalhos Dinâmicos */}
-                        {activeTab === 'ônibus lilás' ? (
+                        {activeTab === 'regional' ? (
                             <>
                                 <th className="px-6 py-4">Data</th>
                                 <th className="px-6 py-4">Município</th>
@@ -124,7 +122,8 @@ export default function ServicesList() {
                         ) : (
                             <>
                                 <th className="px-6 py-4">Data Ref.</th>
-                                <th className="px-6 py-4">Unidade</th>
+                                {/* Coluna renomeada */}
+                                <th className="px-6 py-4">Centro</th>
                                 <th className="px-6 py-4 text-center">Total Mensal</th>
                             </>
                         )}
@@ -140,7 +139,7 @@ export default function ServicesList() {
                     ) : (
                         filteredData.map((item) => (
                             <tr key={item.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                                {activeTab === 'ônibus lilás' ? (
+                                {activeTab === 'regional' ? (
                                     <>
                                         <td className="px-6 py-4">{new Date(item.date_service).toLocaleDateString('pt-BR')}</td>
                                         <td className="px-6 py-4 font-bold text-gray-800">{item.municipality}</td>
