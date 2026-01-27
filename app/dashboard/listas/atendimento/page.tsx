@@ -6,7 +6,7 @@ import { Trash2, Edit, Search, Loader2, MapPin, Building2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export default function ServicesList() {
-  const [activeTab, setActiveTab] = useState<'regional' | 'unidade'>('regional');
+  const [activeTab, setActiveTab] = useState<'ônibus lilás' | 'unidade'>('ônibus lilás');
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -33,8 +33,8 @@ export default function ServicesList() {
     setIsAdmin(admin);
 
     // Seleciona a tabela baseada na aba
-    const tableName = activeTab === 'regional' ? 'services_regional' : 'services_units';
-    const orderBy = activeTab === 'regional' ? 'date_service' : 'date_reference';
+    const tableName = activeTab === 'ônibus lilás' ? 'services_regional' : 'services_units';
+    const orderBy = activeTab === 'ônibus lilás' ? 'date_service' : 'date_reference';
 
     let query = supabase
         .from(tableName)
@@ -52,7 +52,7 @@ export default function ServicesList() {
 
   const handleDelete = async (id: number) => {
       if(!confirm("Deseja excluir este registro?")) return;
-      const tableName = activeTab === 'regional' ? 'services_regional' : 'services_units';
+      const tableName = activeTab === 'ônibus lilás' ? 'services_regional' : 'services_units';
       
       const { error } = await supabase.from(tableName).delete().eq("id", id);
       if (!error) setData(prev => prev.filter(item => item.id !== id));
@@ -62,7 +62,7 @@ export default function ServicesList() {
   // Filtro genérico dependendo da aba
   const filteredData = data.filter(item => {
       const term = searchTerm.toLowerCase();
-      if (activeTab === 'regional') {
+      if (activeTab === 'ônibus lilás') {
           return item.municipality?.toLowerCase().includes(term) || item.origin?.toLowerCase().includes(term);
       } else {
           return item.unit_name?.toLowerCase().includes(term);
@@ -80,10 +80,10 @@ export default function ServicesList() {
         {/* Abas de Navegação */}
         <div className="flex bg-gray-100 p-1 rounded-xl">
             <button 
-                onClick={() => setActiveTab('regional')}
-                className={`px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-all ${activeTab === 'regional' ? 'bg-white shadow text-primary' : 'text-gray-500 hover:text-gray-700'}`}
+                onClick={() => setActiveTab('ônibus lilás')}
+                className={`px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-all ${activeTab === 'ônibus lilás' ? 'bg-white shadow text-primary' : 'text-gray-500 hover:text-gray-700'}`}
             >
-                <MapPin size={16} /> Regional
+                <MapPin size={16} /> Ônibus Lilás
             </button>
             <button 
                 onClick={() => setActiveTab('unidade')}
@@ -99,7 +99,7 @@ export default function ServicesList() {
             <Search className="absolute left-3 top-3 text-gray-400" size={18} />
             <input 
                 type="text" 
-                placeholder={activeTab === 'regional' ? "Buscar município, origem..." : "Buscar unidade..."}
+                placeholder={activeTab === 'ônibus lilás' ? "Buscar município, origem..." : "Buscar unidade..."}
                 className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 outline-none focus:border-primary" 
                 value={searchTerm} 
                 onChange={e => setSearchTerm(e.target.value)} 
@@ -113,7 +113,7 @@ export default function ServicesList() {
                 <thead className="text-xs text-gray-700 uppercase bg-gray-50/50 border-b border-gray-100">
                     <tr>
                         {/* Cabeçalhos Dinâmicos */}
-                        {activeTab === 'regional' ? (
+                        {activeTab === 'ônibus lilás' ? (
                             <>
                                 <th className="px-6 py-4">Data</th>
                                 <th className="px-6 py-4">Município</th>
@@ -140,7 +140,7 @@ export default function ServicesList() {
                     ) : (
                         filteredData.map((item) => (
                             <tr key={item.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                                {activeTab === 'regional' ? (
+                                {activeTab === 'ônibus lilás' ? (
                                     <>
                                         <td className="px-6 py-4">{new Date(item.date_service).toLocaleDateString('pt-BR')}</td>
                                         <td className="px-6 py-4 font-bold text-gray-800">{item.municipality}</td>

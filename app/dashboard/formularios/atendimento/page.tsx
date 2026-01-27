@@ -38,7 +38,7 @@ function ServicesFormContent() {
   const [success, setSuccess] = useState(false);
   const [hasAccess, setHasAccess] = useState<boolean | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [activeTab, setActiveTab] = useState<'regional' | 'unidade'>('regional');
+  const [activeTab, setActiveTab] = useState<'ônibus lilás' | 'unidade'>('ônibus lilás');
   const [targetCoordId, setTargetCoordId] = useState<number | null>(null);
 
   const [formRegional, setFormRegional] = useState({ date_service: "", origin: "", municipality: "", internal_count: "", partner_count: "" });
@@ -49,7 +49,7 @@ function ServicesFormContent() {
 
   // 1. Configurar Aba
   useEffect(() => {
-    if (editId && typeParam && (typeParam === 'regional' || typeParam === 'unidade')) {
+    if (editId && typeParam && (typeParam === 'ônibus lilás' || typeParam === 'unidade')) {
         setActiveTab(typeParam);
     }
   }, [editId, typeParam]);
@@ -112,7 +112,7 @@ function ServicesFormContent() {
     const userId = (await supabase.auth.getUser()).data.user?.id;
     let error = null;
 
-    if (activeTab === 'regional') {
+    if (activeTab === 'ônibus lilás') {
         const payload = {
             date_service: formRegional.date_service,
             origin: formRegional.origin,
@@ -196,9 +196,9 @@ function ServicesFormContent() {
         {/* Abas */}
         <div className="flex p-1 bg-purple-50 rounded-xl mb-8 border border-purple-100">
             <button 
-                onClick={() => !editId && setActiveTab('regional')} 
+                onClick={() => !editId && setActiveTab('ônibus lilás')} 
                 disabled={!!editId} 
-                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-bold transition-all duration-300 ${activeTab === 'regional' ? 'bg-white shadow-md text-primary' : 'text-gray-500 hover:text-gray-700 hover:bg-white/50'} ${editId && activeTab !== 'regional' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-bold transition-all duration-300 ${activeTab === 'ônibus lilás' ? 'bg-white shadow-md text-primary' : 'text-gray-500 hover:text-gray-700 hover:bg-white/50'} ${editId && activeTab !== 'ônibus lilás' ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
                 <MapPin size={18} /> Regional
             </button>
@@ -220,7 +220,7 @@ function ServicesFormContent() {
           <form onSubmit={handleSubmit} className="space-y-6">
             
             {/* --- REGIONAL --- */}
-            {activeTab === 'regional' && (
+            {activeTab === 'ônibus lilás' && (
                 <div className="space-y-6 animate-in slide-in-from-left-4 duration-300">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
