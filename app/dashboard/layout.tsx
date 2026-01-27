@@ -12,8 +12,8 @@ import {
   FileText,
   PlusCircle,
   List,
-  Menu, // Importei o ícone do Menu
-  X     // Importei o ícone de Fechar
+  Menu, 
+  X
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -87,12 +87,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }
   ];
 
-  // Componente do Menu (Reutilizável para Desktop e Mobile)
+  // Componente do Menu (Reutilizável)
   const SidebarContent = () => (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full text-white">
         <div className="p-6 flex items-center gap-3 border-b border-white/10">
           <div className="h-8 w-8 bg-gradient-to-tr from-accent to-purple-500 rounded-lg flex items-center justify-center font-bold text-white shadow-lg">S</div>
-          <span className="text-xl font-bold tracking-wide text-white">SUPEV</span>
+          <span className="text-xl font-bold tracking-wide">SUPEV</span>
         </div>
 
         <nav className="flex-1 p-4 space-y-6 overflow-y-auto custom-scrollbar">
@@ -153,10 +153,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* --- SIDEBAR MOBILE (Overlay) --- */}
       <div className={`fixed inset-0 z-50 transform ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"} transition-transform duration-300 ease-in-out md:hidden`}>
         <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}></div>
-        <div className="relative w-72 h-full bg-primary-dark shadow-2xl">
+        <div className="relative w-72 h-full bg-primary-dark shadow-2xl border-r border-white/10">
             <button 
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="absolute top-4 right-4 text-white/50 hover:text-white"
+                className="absolute top-4 right-4 text-white/50 hover:text-white transition-colors"
             >
                 <X size={24} />
             </button>
@@ -167,14 +167,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* --- ÁREA PRINCIPAL --- */}
       <main className="flex-1 flex flex-col h-full relative bg-main-gradient overflow-hidden">
         
-        {/* HEADER MOBILE (Só aparece no celular) */}
-        <div className="md:hidden flex items-center justify-between p-4 bg-white/10 backdrop-blur-md border-b border-white/10 text-white z-10 shadow-sm">
-            <div className="flex items-center gap-2">
-                <div className="h-8 w-8 bg-accent rounded-lg flex items-center justify-center font-bold text-sm">S</div>
-                <span className="font-bold tracking-wide">SUPEV</span>
+        {/* HEADER MOBILE (Ajustado para bg-primary-dark) */}
+        <div className="md:hidden flex items-center justify-between p-4 bg-primary-dark border-b border-white/10 text-white z-10 shadow-md">
+            <div className="flex items-center gap-3">
+                <div className="h-8 w-8 bg-gradient-to-tr from-accent to-purple-500 rounded-lg flex items-center justify-center font-bold text-sm shadow-lg">S</div>
+                <span className="font-bold tracking-wide text-lg">SUPEV</span>
             </div>
-            <button onClick={() => setIsMobileMenuOpen(true)} className="p-2 bg-white/10 rounded-lg active:scale-95 transition-all">
-                <Menu size={24} />
+            <button 
+                onClick={() => setIsMobileMenuOpen(true)} 
+                className="p-2 hover:bg-white/10 rounded-lg active:scale-95 transition-all text-white"
+            >
+                <Menu size={26} />
             </button>
         </div>
 
