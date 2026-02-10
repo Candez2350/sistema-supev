@@ -25,7 +25,7 @@ const MUNICIPIOS_RJ = [
   "Tanguá", "Teresópolis", "Trajano de Moraes", "Três Rios", "Valença", "Varre-Sai",
   "Vassouras", "Volta Redonda"
 ];
-const TIPOS_MATERIAIS = ["Cartilha", "Folder", "Guia", "Manual", "Ventarola"];
+const TIPOS_MATERIAIS = ["Cartilha", "Folder", "Guia", "Manual", "Praguinhas","Ventarola"];
 
 // --- COMPONENTE INTERNO ---
 function MaterialsFormContent() {
