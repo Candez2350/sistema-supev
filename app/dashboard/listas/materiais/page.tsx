@@ -6,11 +6,11 @@ import { Trash2, Edit, Search, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export default function MaterialsList() {
+  const router = useRouter();
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const router = useRouter();
 
   useEffect(() => {
     fetchData();
@@ -96,7 +96,10 @@ export default function MaterialsList() {
                     ) : (
                         filteredData.map((item) => (
                             <tr key={item.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                                <td className="px-6 py-4 whitespace-nowrap">{new Date(item.date_delivery).toLocaleDateString('pt-BR')}</td>
+                                <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">
+                                    {/* CORREÇÃO AQUI: Adicionado { timeZone: 'UTC' } */}
+                                    {new Date(item.date_delivery).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}
+                                </td>
                                 <td className="px-6 py-4 font-bold text-primary">{item.material_type}</td>
                                 <td className="px-6 py-4 font-mono">{item.quantity}</td>
                                 <td className="px-6 py-4">{item.recipient}</td>
@@ -104,7 +107,7 @@ export default function MaterialsList() {
                                 {isAdmin && <td className="px-6 py-4 text-xs text-gray-500">{item.coordinations?.name || '-'}</td>}
                                 <td className="px-6 py-4 text-right flex justify-end gap-2">
                                     <button 
-                                        onClick={() => router.push(`/dashboard/formularios/materiais?id=${item.id}`)} // <--- LINK EDIÇÃO
+                                        onClick={() => router.push(`/dashboard/formularios/materiais?id=${item.id}`)}
                                         className="text-blue-500 hover:bg-blue-50 p-2 rounded"
                                     >
                                         <Edit size={16} />
