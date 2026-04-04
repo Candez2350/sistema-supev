@@ -303,95 +303,144 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* --- CARDS DE KPI --- */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white/60 backdrop-blur-md border border-white/50 p-6 rounded-2xl shadow-lg relative overflow-hidden group hover:bg-white/80 transition-all">
-          <div className="flex items-center gap-4 mb-2">
-            <div className="p-3 bg-primary/10 rounded-xl text-primary"><TrendingUp size={24} /></div>
-            <span className="text-sm font-bold text-gray-500 uppercase tracking-wider">Ações Realizadas</span>
-          </div>
-          <h3 className="text-4xl font-extrabold text-gray-800">{loading ? "..." : geralStats.totalAcoes}</h3>
-          <p className="text-xs text-gray-400 mt-2">No filtro selecionado</p>
-        </div>
+      {/* --- MENU DE ABAS --- */}
+      <div className="flex gap-2 border-b border-white/50 mb-6 overflow-x-auto pb-1 mt-6">
+          <button onClick={() => setActiveTab('geral')} className={`flex whitespace-nowrap items-center gap-2 px-5 py-3 font-bold text-sm rounded-t-xl transition-all border-b-4 ${activeTab === 'geral' ? 'border-primary text-primary-dark bg-white/60 backdrop-blur-md' : 'border-transparent text-gray-500 hover:text-gray-800 hover:bg-white/30'}`}><LayoutDashboard size={18}/> Visão Geral</button>
+          <button onClick={() => setActiveTab('mobilizacao')} className={`flex whitespace-nowrap items-center gap-2 px-5 py-3 font-bold text-sm rounded-t-xl transition-all border-b-4 ${activeTab === 'mobilizacao' ? 'border-primary text-primary-dark bg-white/60 backdrop-blur-md' : 'border-transparent text-gray-500 hover:text-gray-800 hover:bg-white/30'}`}><Users size={18}/> Mobilizações</button>
+          <button onClick={() => setActiveTab('materiais')} className={`flex whitespace-nowrap items-center gap-2 px-5 py-3 font-bold text-sm rounded-t-xl transition-all border-b-4 ${activeTab === 'materiais' ? 'border-primary text-primary-dark bg-white/60 backdrop-blur-md' : 'border-transparent text-gray-500 hover:text-gray-800 hover:bg-white/30'}`}><Box size={18}/> Materiais</button>
+          <button onClick={() => setActiveTab('servicos')} className={`flex whitespace-nowrap items-center gap-2 px-5 py-3 font-bold text-sm rounded-t-xl transition-all border-b-4 ${activeTab === 'servicos' ? 'border-primary text-primary-dark bg-white/60 backdrop-blur-md' : 'border-transparent text-gray-500 hover:text-gray-800 hover:bg-white/30'}`}><Activity size={18}/> Serviços (Atendimentos)</button>
+      </div>
 
-        <div className="bg-white/60 backdrop-blur-md border border-white/50 p-6 rounded-2xl shadow-lg relative overflow-hidden group hover:bg-white/80 transition-all">
-          <div className="flex items-center gap-4 mb-2">
-            <div className="p-3 bg-accent/10 rounded-xl text-accent"><Users size={24} /></div>
-            <span className="text-sm font-bold text-gray-500 uppercase tracking-wider">Pessoas Alcançadas</span>
-          </div>
-          <h3 className="text-4xl font-extrabold text-gray-800">{loading ? "..." : geralStats.totalPessoas}</h3>
-          <p className="text-xs text-gray-400 mt-2">Impacto direto</p>
-        </div>
-
-        <div className="bg-white/60 backdrop-blur-md border border-white/50 p-6 rounded-2xl shadow-lg relative overflow-hidden group hover:bg-white/80 transition-all">
-          <div className="flex justify-between items-start">
+      {/* --- CONTEÚDO DA ABA: VISÃO GERAL --- */}
+      {activeTab === 'geral' && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="bg-white/60 backdrop-blur-md border border-white/50 p-6 rounded-2xl shadow-lg relative overflow-hidden group hover:bg-white/80 transition-all">
               <div className="flex items-center gap-4 mb-2">
-                <div className="p-3 bg-blue-100 rounded-xl text-blue-600"><MapPin size={24} /></div>
-                <span className="text-sm font-bold text-gray-500 uppercase tracking-wider">Municípios</span>
+                <div className="p-3 bg-primary/10 rounded-xl text-primary"><TrendingUp size={24} /></div>
+                <span className="text-sm font-bold text-gray-500 uppercase tracking-wider">Ações Totais</span>
               </div>
-              <button onClick={() => setShowMuniModal(true)} className="text-xs bg-blue-50 text-blue-600 px-3 py-1 rounded-full font-bold hover:bg-blue-100 transition-colors">Ver Lista</button>
+              <h3 className="text-4xl font-extrabold text-gray-800">{loading ? "..." : geralStats.totalAcoes}</h3>
+              <p className="text-xs text-gray-400 mt-2">Soma de todas as áreas no filtro</p>
+            </div>
+
+            <div className="bg-white/60 backdrop-blur-md border border-white/50 p-6 rounded-2xl shadow-lg relative overflow-hidden group hover:bg-white/80 transition-all">
+              <div className="flex items-center gap-4 mb-2">
+                <div className="p-3 bg-accent/10 rounded-xl text-accent"><Users size={24} /></div>
+                <span className="text-sm font-bold text-gray-500 uppercase tracking-wider">Pessoas Alcançadas</span>
+              </div>
+              <h3 className="text-4xl font-extrabold text-gray-800">{loading ? "..." : geralStats.totalPessoas}</h3>
+              <p className="text-xs text-gray-400 mt-2">Mobilizações + Atendimentos</p>
+            </div>
+
+            <div className="bg-white/60 backdrop-blur-md border border-white/50 p-6 rounded-2xl shadow-lg relative overflow-hidden group hover:bg-white/80 transition-all">
+              <div className="flex justify-between items-start">
+                  <div className="flex items-center gap-4 mb-2">
+                    <div className="p-3 bg-blue-100 rounded-xl text-blue-600"><MapPin size={24} /></div>
+                    <span className="text-sm font-bold text-gray-500 uppercase tracking-wider">Municípios</span>
+                  </div>
+                  <button onClick={() => setShowMuniModal(true)} className="text-xs bg-blue-50 text-blue-600 px-3 py-1 rounded-full font-bold hover:bg-blue-100 transition-colors">Ver Lista</button>
+              </div>
+              <h3 className="text-4xl font-extrabold text-gray-800">{loading ? "..." : geralStats.uniqueMunis.length}</h3>
+              <p className="text-xs text-gray-400 mt-2">Cobertura unificada (todas as áreas)</p>
+            </div>
           </div>
-          <h3 className="text-4xl font-extrabold text-gray-800">{loading ? "..." : geralStats.uniqueMunis.length}</h3>
-          <p className="text-xs text-gray-400 mt-2">Cobertura geográfica</p>
-        </div>
-      </div>
+      )}
 
-      {/* --- GRÁFICOS --- */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        
-        {/* Gráfico de Pizza (Tipos) */}
-        <div className="bg-white/70 backdrop-blur-xl border border-white p-6 rounded-3xl shadow-xl">
-            <h3 className="text-lg font-bold text-gray-700 mb-6 flex items-center gap-2">
-                <div className="w-2 h-6 bg-accent rounded-full"></div>
-                Tipos de Mobilização
-            </h3>
-            <div className="h-64 flex justify-center relative">
-                {geralStats.totalAcoes > 0 ? (
-                    <Doughnut 
-                        data={pieChartData} 
-                        options={{ 
-                            responsive: true, 
-                            maintainAspectRatio: false,
-                            plugins: { legend: { position: 'right' } }
-                        }} 
-                    />
-                ) : (
-                    <div className="flex flex-col items-center justify-center text-gray-400 h-full w-full">
-                        <Search size={32} className="mb-2 opacity-50"/>
-                        <p>Sem dados.</p>
-                    </div>
-                )}
-            </div>
-        </div>
+      {/* --- CONTEÚDO DA ABA: MOBILIZAÇÕES --- */}
+      {activeTab === 'mobilizacao' && (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+             <div className="bg-white/60 backdrop-blur-md border border-white/50 p-6 rounded-2xl shadow-lg hover:bg-white/80 transition-all">
+               <div className="flex items-center gap-4 mb-2">
+                 <div className="p-3 bg-primary/10 rounded-xl text-primary"><TrendingUp size={24} /></div>
+                 <span className="text-sm font-bold text-gray-500 uppercase tracking-wider">Ações de Mobilização</span>
+               </div>
+               <h3 className="text-4xl font-extrabold text-gray-800">{loading ? "..." : filteredMobs.length}</h3>
+             </div>
+             <div className="bg-white/60 backdrop-blur-md border border-white/50 p-6 rounded-2xl shadow-lg hover:bg-white/80 transition-all">
+               <div className="flex items-center gap-4 mb-2">
+                 <div className="p-3 bg-accent/10 rounded-xl text-accent"><Users size={24} /></div>
+                 <span className="text-sm font-bold text-gray-500 uppercase tracking-wider">Participantes</span>
+               </div>
+               <h3 className="text-4xl font-extrabold text-gray-800">{loading ? "..." : filteredMobs.reduce((a,c) => a + (c.participants_count || 0), 0)}</h3>
+             </div>
+          </div>
 
-        {/* Gráfico de Linha (Evolução Temporal) */}
-        <div className="bg-white/70 backdrop-blur-xl border border-white p-6 rounded-3xl shadow-xl">
-            <h3 className="text-lg font-bold text-gray-700 mb-6 flex items-center gap-2">
-                <Calendar className="text-primary" size={20} />
-                Evolução das Ações
-            </h3>
-            <div className="h-64 flex justify-center relative w-full">
-                {geralStats.totalAcoes > 0 ? (
-                    <Line 
-                        data={lineChartData}
-                        options={{
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: { legend: { display: false } },
-                            scales: {
-                                y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } },
-                                x: { grid: { display: false } }
-                            }
-                        }}
-                    />
-                ) : (
-                    <div className="flex flex-col items-center justify-center text-gray-400 h-full w-full">
-                        <p>Nenhuma ação no período.</p>
-                    </div>
-                )}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Gráfico de Pizza (Tipos) */}
+            <div className="bg-white/70 backdrop-blur-xl border border-white p-6 rounded-3xl shadow-xl">
+                <h3 className="text-lg font-bold text-gray-700 mb-6 flex items-center gap-2">
+                    <div className="w-2 h-6 bg-accent rounded-full"></div>
+                    Tipos de Mobilização
+                </h3>
+                <div className="h-64 flex justify-center relative">
+                    {filteredMobs.length > 0 ? (
+                        <Doughnut data={pieChartData} options={{ responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } }} />
+                    ) : (
+                        <div className="flex flex-col items-center justify-center text-gray-400 h-full w-full">
+                            <Search size={32} className="mb-2 opacity-50"/>
+                            <p>Sem dados.</p>
+                        </div>
+                    )}
+                </div>
             </div>
-        </div>
-      </div>
+            {/* Gráfico de Linha (Evolução Temporal) */}
+            <div className="bg-white/70 backdrop-blur-xl border border-white p-6 rounded-3xl shadow-xl">
+                <h3 className="text-lg font-bold text-gray-700 mb-6 flex items-center gap-2">
+                    <Calendar className="text-primary" size={20} />
+                    Evolução das Ações
+                </h3>
+                <div className="h-64 flex justify-center relative w-full">
+                    {filteredMobs.length > 0 ? (
+                        <Line data={lineChartData} options={{ responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } }, x: { grid: { display: false } } } }} />
+                    ) : (
+                        <div className="flex flex-col items-center justify-center text-gray-400 h-full w-full"><p>Nenhuma ação no período.</p></div>
+                    )}
+                </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* --- CONTEÚDO DA ABA: MATERIAIS --- */}
+      {activeTab === 'materiais' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+             <div className="bg-white/60 backdrop-blur-md border border-white/50 p-6 rounded-2xl shadow-lg hover:bg-white/80 transition-all">
+               <div className="flex items-center gap-4 mb-2">
+                 <div className="p-3 bg-primary/10 rounded-xl text-primary"><Box size={24} /></div>
+                 <span className="text-sm font-bold text-gray-500 uppercase tracking-wider">Entregas Realizadas</span>
+               </div>
+               <h3 className="text-4xl font-extrabold text-gray-800">{loading ? "..." : filteredMats.length}</h3>
+             </div>
+             <div className="bg-white/60 backdrop-blur-md border border-white/50 p-6 rounded-2xl shadow-lg hover:bg-white/80 transition-all">
+               <div className="flex items-center gap-4 mb-2">
+                 <div className="p-3 bg-accent/10 rounded-xl text-accent"><TrendingUp size={24} /></div>
+                 <span className="text-sm font-bold text-gray-500 uppercase tracking-wider">Total de Itens Entregues</span>
+               </div>
+               <h3 className="text-4xl font-extrabold text-gray-800">{loading ? "..." : filteredMats.reduce((a,c) => a + (c.quantity || 0), 0)}</h3>
+             </div>
+          </div>
+      )}
+
+      {/* --- CONTEÚDO DA ABA: SERVIÇOS --- */}
+      {activeTab === 'servicos' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+             <div className="bg-white/60 backdrop-blur-md border border-white/50 p-6 rounded-2xl shadow-lg hover:bg-white/80 transition-all">
+               <div className="flex items-center gap-4 mb-2">
+                 <div className="p-3 bg-primary/10 rounded-xl text-primary"><Activity size={24} /></div>
+                 <span className="text-sm font-bold text-gray-500 uppercase tracking-wider">Atend. Ônibus Lilás</span>
+               </div>
+               <h3 className="text-4xl font-extrabold text-gray-800">{loading ? "..." : filteredSReg.reduce((a,c) => a + (c.internal_count || 0) + (c.partner_count || 0), 0)}</h3>
+             </div>
+             <div className="bg-white/60 backdrop-blur-md border border-white/50 p-6 rounded-2xl shadow-lg hover:bg-white/80 transition-all">
+               <div className="flex items-center gap-4 mb-2">
+                 <div className="p-3 bg-accent/10 rounded-xl text-accent"><LayoutDashboard size={24} /></div>
+                 <span className="text-sm font-bold text-gray-500 uppercase tracking-wider">Atend. Unidades Fixas</span>
+               </div>
+               <h3 className="text-4xl font-extrabold text-gray-800">{loading ? "..." : filteredSUnit.reduce((a,c) => a + (c.monthly_count || 0), 0)}</h3>
+             </div>
+          </div>
+      )}
 
       {/* --- MODAL DE LISTA DE MUNICÍPIOS --- */}
       {showMuniModal && (
