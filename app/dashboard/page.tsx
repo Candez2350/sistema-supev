@@ -12,7 +12,10 @@ import {
   Search,
   ChevronDown,
   CheckSquare,
-  Square
+  Square,
+  LayoutDashboard,
+  Box,
+  Activity
 } from "lucide-react";
 import { Doughnut, Line } from "react-chartjs-2";
 import {
@@ -33,21 +36,30 @@ ChartJS.register(
   ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, Title, Filler
 );
 
+// --- INTERFACES TYPESCRIPT ---
+type Coordination = { id: number; name: string };
+type Mobilization = { id: number; date_event: string; mobilization_type: string; participants_count: number; municipalities: string; coordination_id: number };
+type Material = { id: number; date_delivery: string; material_type: string; quantity: number; recipient: string; municipality: string; coordination_id: number };
+type ServiceRegional = { id: number; date_service: string; municipality: string; origin: string; internal_count: number; partner_count: number; coordination_id: number };
+type ServiceUnit = { id: number; date_reference: string; unit_name: string; monthly_count: number; coordination_id: number };
+
 export default function Dashboard() {
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("geral");
   
   // Dados Brutos
-  const [allMobs, setAllMobs] = useState<any[]>([]);
-  const [coordinations, setCoordinations] = useState<any[]>([]);
+  const [mobs, setMobs] = useState<Mobilization[]>([]);
+  const [materials, setMaterials] = useState<Material[]>([]);
+  const [servRegional, setServRegional] = useState<ServiceRegional[]>([]);
+  const [servUnits, setServUnits] = useState<ServiceUnit[]>([]);
+  const [coordinations, setCoordinations] = useState<Coordination[]>([]);
 
   // --- ESTADOS DE FILTRO ---
   const [selectedCoords, setSelectedCoords] = useState<string[]>([]);
   const [isCoordDropdownOpen, setIsCoordDropdownOpen] = useState(false);
-  
   const [dateStart, setDateStart] = useState("");
   const [dateEnd, setDateEnd] = useState("");
 
-  // Estado do Modal de Municípios
   const [showMuniModal, setShowMuniModal] = useState(false);
 
   useEffect(() => {
@@ -56,11 +68,20 @@ export default function Dashboard() {
 
   const fetchInitialData = async () => {
     try {
-      const { data: mobs } = await supabase.from("mobilizations").select("*");
-      const { data: coords } = await supabase.from("coordinations").select("*");
+      // Busca todas as tabelas em paralelo para performance
+      const [mobsRes, coordsRes, matsRes, sRegRes, sUnitRes] = await Promise.all([
+        supabase.from("mobilizations").select("*"),
+        supabase.from("coordinations").select("*"),
+        supabase.from("materials_delivered").select("*"),
+        supabase.from("services_regional").select("*"),
+        supabase.from("services_units").select("*")
+      ]);
 
-      if (mobs) setAllMobs(mobs);
-      if (coords) setCoordinations(coords);
+      if (mobsRes.data) setMobs(mobsRes.data);
+      if (coordsRes.data) setCoordinations(coordsRes.data);
+      if (matsRes.data) setMaterials(matsRes.data);
+      if (sRegRes.data) setServRegional(sRegRes.data);
+      if (sUnitRes.data) setServUnits(sUnitRes.data);
       
     } catch (error) {
       console.error("Erro ao carregar dados:", error);
@@ -79,41 +100,67 @@ export default function Dashboard() {
   };
 
   // --- LÓGICA DE FILTRAGEM ---
-  const filteredData = useMemo(() => {
-    return allMobs.filter(item => {
-      // 1. Filtro de Coordenação
-      const coordMatch = selectedCoords.length === 0 || selectedCoords.includes(String(item.coordination_id));
-      
-      // 2. Filtro de Data
-      const itemDate = new Date(item.date_event);
-      const startMatch = dateStart ? itemDate >= new Date(dateStart) : true;
-      const endMatch = dateEnd ? itemDate <= new Date(dateEnd) : true;
-
-      return coordMatch && startMatch && endMatch;
-    });
-  }, [allMobs, selectedCoords, dateStart, dateEnd]);
-
-  // --- CÁLCULOS DOS KPIS ---
-  const stats = useMemo(() => {
-    const totalAcoes = filteredData.length;
-    const totalPessoas = filteredData.reduce((acc, curr) => acc + (curr.participants_count || 0), 0);
+  const filterItem = (item: any, dateField: string) => {
+    const coordMatch = selectedCoords.length === 0 || selectedCoords.includes(String(item.coordination_id));
     
-    let muniList: string[] = [];
-    filteredData.forEach(m => {
-        if(m.municipalities) {
-            const clean = m.municipalities.split(",").map((s: string) => s.trim());
-            muniList = [...muniList, ...clean];
-        }
-    });
-    const uniqueMunis = Array.from(new Set(muniList.filter(m => m !== ""))).sort();
+    let startMatch = true;
+    let endMatch = true;
+    if (item[dateField]) {
+        const itemDate = new Date(item[dateField]);
+        if (dateStart) startMatch = itemDate >= new Date(dateStart);
+        if (dateEnd) endMatch = itemDate <= new Date(dateEnd);
+    }
+    return coordMatch && startMatch && endMatch;
+  };
+
+  const filteredMobs = useMemo(() => mobs.filter(m => filterItem(m, 'date_event')), [mobs, selectedCoords, dateStart, dateEnd]);
+  const filteredMats = useMemo(() => materials.filter(m => filterItem(m, 'date_delivery')), [materials, selectedCoords, dateStart, dateEnd]);
+  const filteredSReg = useMemo(() => servRegional.filter(m => filterItem(m, 'date_service')), [servRegional, selectedCoords, dateStart, dateEnd]);
+  const filteredSUnit = useMemo(() => servUnits.filter(m => filterItem(m, 'date_reference')), [servUnits, selectedCoords, dateStart, dateEnd]);
+
+  // --- CÁLCULOS DOS KPIS (VISÃO GERAL) ---
+  const geralStats = useMemo(() => {
+    const totalAcoes = filteredMobs.length + filteredMats.length + filteredSReg.length + filteredSUnit.length;
+    
+    // Pessoas = Mobilizações + Atendimentos
+    const pessoasMobs = filteredMobs.reduce((acc, curr) => acc + (curr.participants_count || 0), 0);
+    const pessoasSReg = filteredSReg.reduce((acc, curr) => acc + (curr.internal_count || 0) + (curr.partner_count || 0), 0);
+    const pessoasSUnit = filteredSUnit.reduce((acc, curr) => acc + (curr.monthly_count || 0), 0);
+    const totalPessoas = pessoasMobs + pessoasSReg + pessoasSUnit;
+    
+    // Agrupamento de Municípios (Nome -> Áreas e Coordenações)
+    const muniMap: Record<string, { areas: Set<string>, coords: Set<string> }> = {};
+    const getCoordName = (id: number) => coordinations.find(c => c.id === id)?.name || String(id);
+    
+    const addMuni = (muniString: string, area: string, coordId: number) => {
+        if (!muniString) return;
+        muniString.split(",").forEach(m => {
+            const clean = m.trim();
+            if (!clean) return;
+            if (!muniMap[clean]) muniMap[clean] = { areas: new Set(), coords: new Set() };
+            muniMap[clean].areas.add(area);
+            muniMap[clean].coords.add(getCoordName(coordId));
+        });
+    };
+
+    filteredMobs.forEach(m => addMuni(m.municipalities, 'Mobilizações', m.coordination_id));
+    filteredMats.forEach(m => addMuni(m.municipality, 'Materiais', m.coordination_id));
+    filteredSReg.forEach(m => addMuni(m.municipality, 'Ônibus Lilás', m.coordination_id));
+    
+    // Converte o Mapa em Array Ordenado para o Modal
+    const uniqueMunis = Object.keys(muniMap).sort().map(name => ({
+        name,
+        areas: Array.from(muniMap[name].areas),
+        coords: Array.from(muniMap[name].coords)
+    }));
 
     return { totalAcoes, totalPessoas, uniqueMunis };
-  }, [filteredData]);
+  }, [filteredMobs, filteredMats, filteredSReg, filteredSUnit, coordinations]);
 
   // --- DADOS DO GRÁFICO DE PIZZA (TIPOS) ---
   const pieChartData = useMemo(() => {
     const tipoCount: Record<string, number> = {};
-    filteredData.forEach(m => {
+    filteredMobs.forEach(m => {
         const tipo = m.mobilization_type || "Não Informado";
         tipoCount[tipo] = (tipoCount[tipo] || 0) + 1;
     });
@@ -126,14 +173,14 @@ export default function Dashboard() {
             borderWidth: 0,
         }],
     };
-  }, [filteredData]);
+  }, [filteredMobs]);
 
   // --- DADOS DO GRÁFICO DE LINHA (EVOLUÇÃO TEMPORAL) ---
   const lineChartData = useMemo(() => {
     // 1. Agrupar por Mês/Ano (YYYY-MM) para ordenar corretamente
     const groups: Record<string, number> = {};
     
-    filteredData.forEach(item => {
+    filteredMobs.forEach(item => {
         const date = new Date(item.date_event);
         // Cria chave ordenável: "2025-01", "2025-02"
         const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
@@ -173,7 +220,7 @@ export default function Dashboard() {
             pointHoverRadius: 6
         }]
     };
-  }, [filteredData]);
+  }, [filteredMobs]);
 
   const getFilterButtonText = () => {
     if (selectedCoords.length === 0) return "Todas as Coordenações";
@@ -263,7 +310,7 @@ export default function Dashboard() {
             <div className="p-3 bg-primary/10 rounded-xl text-primary"><TrendingUp size={24} /></div>
             <span className="text-sm font-bold text-gray-500 uppercase tracking-wider">Ações Realizadas</span>
           </div>
-          <h3 className="text-4xl font-extrabold text-gray-800">{loading ? "..." : stats.totalAcoes}</h3>
+          <h3 className="text-4xl font-extrabold text-gray-800">{loading ? "..." : geralStats.totalAcoes}</h3>
           <p className="text-xs text-gray-400 mt-2">No filtro selecionado</p>
         </div>
 
@@ -272,7 +319,7 @@ export default function Dashboard() {
             <div className="p-3 bg-accent/10 rounded-xl text-accent"><Users size={24} /></div>
             <span className="text-sm font-bold text-gray-500 uppercase tracking-wider">Pessoas Alcançadas</span>
           </div>
-          <h3 className="text-4xl font-extrabold text-gray-800">{loading ? "..." : stats.totalPessoas}</h3>
+          <h3 className="text-4xl font-extrabold text-gray-800">{loading ? "..." : geralStats.totalPessoas}</h3>
           <p className="text-xs text-gray-400 mt-2">Impacto direto</p>
         </div>
 
@@ -284,7 +331,7 @@ export default function Dashboard() {
               </div>
               <button onClick={() => setShowMuniModal(true)} className="text-xs bg-blue-50 text-blue-600 px-3 py-1 rounded-full font-bold hover:bg-blue-100 transition-colors">Ver Lista</button>
           </div>
-          <h3 className="text-4xl font-extrabold text-gray-800">{loading ? "..." : stats.uniqueMunis.length}</h3>
+          <h3 className="text-4xl font-extrabold text-gray-800">{loading ? "..." : geralStats.uniqueMunis.length}</h3>
           <p className="text-xs text-gray-400 mt-2">Cobertura geográfica</p>
         </div>
       </div>
@@ -299,7 +346,7 @@ export default function Dashboard() {
                 Tipos de Mobilização
             </h3>
             <div className="h-64 flex justify-center relative">
-                {stats.totalAcoes > 0 ? (
+                {geralStats.totalAcoes > 0 ? (
                     <Doughnut 
                         data={pieChartData} 
                         options={{ 
@@ -324,7 +371,7 @@ export default function Dashboard() {
                 Evolução das Ações
             </h3>
             <div className="h-64 flex justify-center relative w-full">
-                {stats.totalAcoes > 0 ? (
+                {geralStats.totalAcoes > 0 ? (
                     <Line 
                         data={lineChartData}
                         options={{
@@ -358,10 +405,14 @@ export default function Dashboard() {
                     <button onClick={() => setShowMuniModal(false)} className="p-2 hover:bg-gray-200 rounded-full transition-colors"><X size={20} className="text-gray-500" /></button>
                 </div>
                 <div className="p-6 max-h-[60vh] overflow-y-auto custom-scrollbar">
-                    {stats.uniqueMunis.length > 0 ? (
+                    {geralStats.uniqueMunis.length > 0 ? (
                         <div className="flex flex-wrap gap-2">
-                            {stats.uniqueMunis.map(m => (
-                                <span key={m} className="px-3 py-1 bg-blue-50 text-blue-700 text-sm font-semibold rounded-lg border border-blue-100">{m}</span>
+                            {geralStats.uniqueMunis.map(m => (
+                                <span 
+                                    key={m.name} 
+                                    title={`Áreas: ${m.areas.join(', ')}`}
+                                    className="px-3 py-1 bg-blue-50 text-blue-700 text-sm font-semibold rounded-lg border border-blue-100 cursor-help"
+                                >{m.name}</span>
                             ))}
                         </div>
                     ) : (
@@ -369,7 +420,7 @@ export default function Dashboard() {
                     )}
                 </div>
                 <div className="p-4 bg-gray-50 border-t border-gray-100 text-center">
-                    <span className="text-xs font-bold text-gray-400">Total: {stats.uniqueMunis.length} municípios</span>
+                    <span className="text-xs font-bold text-gray-400">Total: {geralStats.uniqueMunis.length} municípios</span>
                 </div>
             </div>
         </div>
