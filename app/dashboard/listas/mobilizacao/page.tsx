@@ -118,7 +118,7 @@ export default function MobilizationList() {
                     ) : (
                         filteredData.map((item) => (
                             <tr key={item.id} className="border-b border-gray-50 hover:bg-primary/5 transition-colors">
-                                <td className="px-6 py-4 font-medium whitespace-nowrap">{new Date(item.date_event).toLocaleDateString('pt-BR')}</td>
+                                <td className="px-6 py-4 font-medium whitespace-nowrap">{item.date_event ? item.date_event.split('T')[0].split('-').reverse().join('/') : '-'}</td>
                                 <td className="px-6 py-4 font-bold text-primary-dark">{item.action_name}</td>
                                 <td className="px-6 py-4">
                                     <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded-lg text-xs font-bold whitespace-nowrap">{item.mobilization_type}</span>

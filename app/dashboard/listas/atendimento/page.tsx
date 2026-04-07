@@ -141,7 +141,7 @@ export default function ServicesList() {
                             <tr key={item.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
                                 {activeTab === 'regional' ? (
                                     <>
-                                        <td className="px-6 py-4">{new Date(item.date_service).toLocaleDateString('pt-BR')}</td>
+                                        <td className="px-6 py-4">{item.date_service ? item.date_service.split('T')[0].split('-').reverse().join('/') : '-'}</td>
                                         <td className="px-6 py-4 font-bold text-gray-800">{item.municipality}</td>
                                         <td className="px-6 py-4">{item.origin}</td>
                                         <td className="px-6 py-4 text-center">{item.internal_count}</td>
@@ -149,7 +149,7 @@ export default function ServicesList() {
                                     </>
                                 ) : (
                                     <>
-                                        <td className="px-6 py-4">{new Date(item.date_reference).toLocaleDateString('pt-BR')}</td>
+                                        <td className="px-6 py-4">{item.date_reference ? item.date_reference.split('T')[0].split('-').reverse().join('/') : '-'}</td>
                                         <td className="px-6 py-4 font-bold text-gray-800">{item.unit_name}</td>
                                         <td className="px-6 py-4 text-center font-mono font-bold text-primary">{item.monthly_count}</td>
                                     </>

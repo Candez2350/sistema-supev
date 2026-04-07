@@ -98,7 +98,7 @@ export default function MaterialsList() {
                             <tr key={item.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
                                 <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">
                                     {/* CORREÇÃO AQUI: Adicionado { timeZone: 'UTC' } */}
-                                    {new Date(item.date_delivery).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}
+                                    {item.date_delivery ? item.date_delivery.split('T')[0].split('-').reverse().join('/') : '-'}
                                 </td>
                                 <td className="px-6 py-4 font-bold text-primary">{item.material_type}</td>
                                 <td className="px-6 py-4 font-mono">{item.quantity}</td>
