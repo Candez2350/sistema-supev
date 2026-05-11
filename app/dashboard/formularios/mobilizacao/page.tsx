@@ -48,7 +48,7 @@ function MobilizationFormContent() {
     "Tanguá", "Teresópolis", "Trajano de Moraes", "Três Rios", "Valença", "Varre-Sai",
     "Vassouras", "Volta Redonda"
   ];
-  const TIPOS_MOBILIZACAO = ["Ativação", "Campanha", "Capacitação/Formação", "Palestra"];
+  const TIPOS_MOBILIZACAO = ["Ativação", "Assessoramento","Campanha", "Capacitação/Formação", "Palestra"];
 
   // 1. Permissões e Usuário
   useEffect(() => {
