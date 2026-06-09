@@ -118,6 +118,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         { name: "Novo Registro", icon: FileText, href: "/dashboard/formularios/atendimento" },
         { name: "Ver Lista", icon: List, href: "/dashboard/listas/atendimento" }
       ]
+    },
+    { 
+      section: "Casa Abrigo",
+      visible: true, 
+      items: [
+        { name: "Nova Planilha", icon: PlusCircle, href: "/dashboard/formularios/casa-abrigo" },
+        { name: "Ver Histórico", icon: List, href: "/dashboard/listas/casa-abrigo" }
+      ]
     }
   ];
 

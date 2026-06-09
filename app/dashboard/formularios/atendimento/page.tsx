@@ -27,6 +27,16 @@ const MUNICIPIOS_RJ = [
 ];
 const CENTROS_DISPONIVEIS = [ "CIAM Márcia Lyra", "CEAM Baixada", "CEAM Queimados" ];
 
+// --- HELPER PARA DIVISÃO DE ATENDIMENTOS ---
+const isFromJune2026Onwards = (dateStr: string) => {
+  if (!dateStr) return false;
+  const dateOnly = dateStr.split("T")[0];
+  const [year, month] = dateOnly.split("-").map(Number);
+  if (year > 2026) return true;
+  if (year === 2026 && month >= 6) return true;
+  return false;
+};
+
 // --- CONTEÚDO DO FORMULÁRIO ---
 function ServicesFormContent() {
   const router = useRouter();
@@ -44,7 +54,13 @@ function ServicesFormContent() {
   const [targetCoordId, setTargetCoordId] = useState<number | null>(null);
 
   const [formRegional, setFormRegional] = useState({ date_service: "", origin: "", municipality: "", internal_count: "", partner_count: "" });
-  const [formUnidade, setFormUnidade] = useState({ date_reference: "", unit_name: "", monthly_count: "" });
+  const [formUnidade, setFormUnidade] = useState({ 
+    date_reference: "", 
+    unit_name: "", 
+    monthly_count: "",
+    first_attendance: "",
+    return_attendance: ""
+  });
   
   const [isMuniDropdownOpen, setIsMuniDropdownOpen] = useState(false);
   const [muniSearchTerm, setMuniSearchTerm] = useState("");
@@ -94,7 +110,9 @@ function ServicesFormContent() {
                 setFormUnidade({
                     date_reference: data.date_reference ? data.date_reference.split('T')[0] : "", 
                     unit_name: data.unit_name || "",
-                    monthly_count: String(data.monthly_count || ""),
+                    monthly_count: String(data.monthly_count ?? ""),
+                    first_attendance: String(data.first_attendance ?? ""),
+                    return_attendance: String(data.return_attendance ?? ""),
                 });
             }
         }
@@ -132,19 +150,29 @@ function ServicesFormContent() {
              error = err;
         }
     } else {
-        const payload = {
+        const isSplit = isFromJune2026Onwards(formUnidade.date_reference);
+        const payload: any = {
             date_reference: formUnidade.date_reference,
             unit_name: formUnidade.unit_name,
-            monthly_count: Number(formUnidade.monthly_count),
             coordination_id: targetCoordId,
             user_id: userId
         };
-        if (editId) {
-            const { error: err } = await supabase.from("services_units").update(payload).eq("id", editId);
-            error = err;
+        if (isSplit) {
+            payload.first_attendance = Number(formUnidade.first_attendance);
+            payload.return_attendance = Number(formUnidade.return_attendance);
+            payload.monthly_count = payload.first_attendance + payload.return_attendance;
         } else {
-            const { error: err } = await supabase.from("services_units").insert([payload]);
-            error = err;
+            payload.first_attendance = null;
+            payload.return_attendance = null;
+            payload.monthly_count = Number(formUnidade.monthly_count);
+        }
+
+        if (editId) {
+             const { error: err } = await supabase.from("services_units").update(payload).eq("id", editId);
+             error = err;
+        } else {
+             const { error: err } = await supabase.from("services_units").insert([payload]);
+             error = err;
         }
     }
 
@@ -153,7 +181,11 @@ function ServicesFormContent() {
     else {
       setSuccess(true);
       if (!editId) {
-          setTimeout(() => { setSuccess(false); setFormRegional({ date_service: "", origin: "", municipality: "", internal_count: "", partner_count: "" }); setFormUnidade({ date_reference: "", unit_name: "", monthly_count: "" }); }, 2000);
+          setTimeout(() => { 
+              setSuccess(false); 
+              setFormRegional({ date_service: "", origin: "", municipality: "", internal_count: "", partner_count: "" }); 
+              setFormUnidade({ date_reference: "", unit_name: "", monthly_count: "", first_attendance: "", return_attendance: "" }); 
+          }, 2000);
       } else {
           setTimeout(() => router.push("/dashboard/listas/atendimento"), 1500);
       }
@@ -285,10 +317,23 @@ function ServicesFormContent() {
                             </div>
                         </div>
                     </div>
-                    <div className="space-y-2">
-                        <label className="text-sm font-bold text-gray-700 ml-1">Total Mensal</label>
-                        <input type="number" required min="0" value={formUnidade.monthly_count} onChange={e => setFormUnidade({...formUnidade, monthly_count: e.target.value})} className="w-full p-3 rounded-xl bg-white/60 border border-purple-100 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all shadow-sm"/>
-                    </div>
+                    {isFromJune2026Onwards(formUnidade.date_reference) ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <label className="text-sm font-bold text-gray-700 ml-1">1º Atendimento</label>
+                                <input type="number" required min="0" value={formUnidade.first_attendance} onChange={e => setFormUnidade({...formUnidade, first_attendance: e.target.value})} className="w-full p-3 rounded-xl bg-white/60 border border-purple-100 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all shadow-sm"/>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-bold text-gray-700 ml-1">Retorno</label>
+                                <input type="number" required min="0" value={formUnidade.return_attendance} onChange={e => setFormUnidade({...formUnidade, return_attendance: e.target.value})} className="w-full p-3 rounded-xl bg-white/60 border border-purple-100 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all shadow-sm"/>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="space-y-2">
+                            <label className="text-sm font-bold text-gray-700 ml-1">Total Mensal</label>
+                            <input type="number" required min="0" value={formUnidade.monthly_count} onChange={e => setFormUnidade({...formUnidade, monthly_count: e.target.value})} className="w-full p-3 rounded-xl bg-white/60 border border-purple-100 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all shadow-sm"/>
+                        </div>
+                    )}
                 </div>
             )}
 

@@ -5,6 +5,16 @@ import { supabase } from "../../../../lib/supabase";
 import { Trash2, Edit, Search, Loader2, MapPin, Building2, Bus } from "lucide-react";
 import { useRouter } from "next/navigation";
 
+// --- HELPER PARA DIVISÃO DE ATENDIMENTOS ---
+const isFromJune2026Onwards = (dateStr: string) => {
+  if (!dateStr) return false;
+  const dateOnly = dateStr.split("T")[0];
+  const [year, month] = dateOnly.split("-").map(Number);
+  if (year > 2026) return true;
+  if (year === 2026 && month >= 6) return true;
+  return false;
+};
+
 export default function ServicesList() {
   const router = useRouter();
   // Mantive a lógica 'regional' para não quebrar a busca no banco, mas a UI muda
@@ -151,7 +161,18 @@ export default function ServicesList() {
                                     <>
                                         <td className="px-6 py-4">{item.date_reference ? item.date_reference.split('T')[0].split('-').reverse().join('/') : '-'}</td>
                                         <td className="px-6 py-4 font-bold text-gray-800">{item.unit_name}</td>
-                                        <td className="px-6 py-4 text-center font-mono font-bold text-primary">{item.monthly_count}</td>
+                                        <td className="px-6 py-4 text-center font-mono font-bold text-primary">
+                                            {isFromJune2026Onwards(item.date_reference) ? (
+                                                <div className="flex flex-col items-center">
+                                                    <span>{item.monthly_count}</span>
+                                                    <span className="text-xs text-gray-500 font-normal mt-0.5">
+                                                        1º: {item.first_attendance ?? 0} | Ret: {item.return_attendance ?? 0}
+                                                    </span>
+                                                </div>
+                                            ) : (
+                                                item.monthly_count
+                                            )}
+                                        </td>
                                     </>
                                 )}
                                 
