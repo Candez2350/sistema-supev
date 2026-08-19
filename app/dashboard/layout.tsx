@@ -91,7 +91,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       section: "Geral",
       visible: true, 
       items: [
-        { name: "Visão Geral", icon: LayoutDashboard, href: "/dashboard" }
+        { name: "Visão Geral", icon: LayoutDashboard, href: "/dashboard" },
+        { name: "Relatórios", icon: FileText, href: "/dashboard/relatorios" }
       ]
     },
     { 
